@@ -1,33 +1,87 @@
-# pipeline-RGB
-采集 
-→ 标定 → 生成 stereo_calib_rgb.npz
-生成新内参
-→ 运行时：采集 + rectified
-→ 输入 FS 
+# rgb-zed-mainline
 
-cd /home/match/foundationstereo-industrial-6dpose/RGB-pipeline \
-conda activate foundationpose 
+Unified stereo workflow for your two main routes:
 
-只做一次：
-固定两台相机 → 水平左右摆好，不再移动
+- dual RGB cameras
+- ZED stereo RGB
 
-python save_calib_images_dual_rgb.py 拍 15–25 组棋盘格
+RealSense IR support is kept as a secondary helper pipeline, not the main project identity.
 
-python stereo_calibrate_rgb.py → 得到 stereo_calib_rgb.npz
+## What this repo contains
 
-python make_fs_intrinsic_from_npz.py → 得到 assets/K_d435.txt
+```text
+pipelines/
+  dual_rgb/
+    RGB-pipeline/
+  zed_rgb/
+  realsense_ir/
+tools/
+  zed_depth/
+samples/
+references/
+```
 
-每次想测试 FS 时：
+## Main routes
 
-cd /home/match/foundationstereo-industrial-6dpose/RGB-pipeline \
-conda activate foundationpose 
+### 1. Dual RGB
 
-python capture_rectified_for_fs.py              → shared_fs_test/left_rect.png / right_rect.png
+Use:
 
-scripts/run_demo.py + K_d435.txt → 观察深度/视差输出是否合理
+- `pipelines/dual_rgb/RGB-pipeline/save_calib_images_dual_rgb.py`
+- `pipelines/dual_rgb/RGB-pipeline/stereo_calibrate_rgb.py`
+- `pipelines/dual_rgb/RGB-pipeline/make_fs_intrinsic_from_npz.py`
+- `pipelines/dual_rgb/RGB-pipeline/capture_rectified_for_fs.py`
 
-cd ~/FS/FoundationStereo \
-conda activate foundation_stereo 
+Outputs are written to:
 
-python scripts/run_demo.py   --left_file ./shared_fs_test/left_rect.png   --right_file ./shared_fs_test/right_rect.png   --ckpt_dir ./pretrained_models/model_best_bp2.pth   --out_dir ./outputs_test   --intrinsic ./assets/K_d435_2RGB.txt
+- `outputs/dual_rgb/`
 
+### 2. ZED RGB
+
+Use:
+
+- `pipelines/zed_rgb/zed-rgb.py`
+- `tools/zed_depth/npy_png.py`
+- `tools/zed_depth/depth_compare.py`
+- `tools/zed_depth/depth_uberprufen.py`
+
+Outputs are written to:
+
+- `outputs/zed_capture/`
+- `outputs/zed_depth/`
+
+### 3. RealSense IR helper path
+
+Use only when you need IR-to-RGB aligned depth:
+
+- `pipelines/realsense_ir/realsense_IR_v1.py`
+- `pipelines/realsense_ir/IR-RGB-clp.py`
+- `pipelines/realsense_ir/IR_farben.py`
+- `pipelines/realsense_ir/fs_depth_to_rgb_alignment.py`
+
+Outputs are written to:
+
+- `outputs/realsense_ir/`
+
+## Why this is the main repo now
+
+- `pipeline-RGB` had the cleanest dual-RGB calibration flow
+- `ZED` had the cleanest direct stereo capture flow
+- `foundationstereo-industrial-6dpose` and `match` were mostly duplicated integration snapshots
+- `FoundationStereo_copy` should stay external as the upstream model dependency
+
+## Cleanup already done
+
+- removed repeated calibration failure folders
+- removed repeated visualization copies
+- reduced sample and pose data to minimal representative examples
+- replaced old absolute paths with repo-relative output paths
+- added `outputs/` to `.gitignore`
+
+## Recommended archive/delete plan
+
+- delete or archive `test`
+- delete or archive `test1`
+- delete the empty `foundationpose`
+- archive `match` after final spot-check
+- archive `foundationstereo-industrial-6dpose` after you fully switch to this repo
