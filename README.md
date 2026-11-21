@@ -1,5 +1,7 @@
 # Stereo Vision and Depth Pipelines for Industrial Robotics
 
+**English** | [简体中文](README.zh-CN.md)
+
 [Personal website](https://alex7537.github.io/) · [ZED capture](pipelines/zed_rgb/zed-rgb.py) · [RealSense alignment](pipelines/realsense_ir/fs_depth_to_rgb_alignment.py)
 
 This repository connects camera acquisition and calibration to stereo depth estimation and RGB-D preparation for industrial 6D object pose pipelines. It consolidates dual-RGB and ZED workflows, with an additional RealSense infrared-to-color alignment route.
